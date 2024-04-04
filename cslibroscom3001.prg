@@ -3,14 +3,14 @@
 // Propósito  : Emite el Libro de Compras con salida EXCEL
 // Aplicación : 
 // Tipo       : STD00000
-// Creado Por : Daniel RamÃ­rez
+// Creado Por : Daniel Rami­rez
 // Observación: Llamado por CSLIBROSCOM30
 // Modificaciones: (AG20080407)  Todas las modificaciones de Abril del 2,3 y 7 hacen referencia
 //                               a cambios para que colocara las importaciones en su columna correspondiente.
-//                 (DR20110606a) Se incorpora columna de nÃºmero de retención
+//                 (DR20110606a) Se incorpora columna de número de retención
 //                 (DR20110606b) Se corrige BUG en descripción de totalización de las compras
 //                 (DR20110606c) Se cambia número de retención (DOCNUM por NUMTRA)
-//                 (DR20110606d) Se corrige BUG en cÃ¡lculo de porcentaje de retención
+//                 (DR20110606d) Se corrige BUG en cálculo de porcentaje de retención
 //                 (AG20110707a) Se condiciona para que si tiene alicuota reducida y general, entonces genere linea
 //                               adicional solo con el monto de la alicuota reducida (sin neto ni exentos)
 //                 (AG20110707b) Se agrega a la clave el IVA, ya que sin esto no mostraba la linea adicional
@@ -25,6 +25,9 @@
 //                 (DR20130618d) Se cambia nombre de columna de comprobante de retención
 //                 (DR20131112a) Se agrega columna de porcentaje de retenciÃ²n
 //                 (AG20170926) CAMBIOS IVA REDUCIDO PAGOS ELECTRONICOS
+// JN 04/04/2024 aTipDoc sustituido por TDC_LIBCOM=1 en INNER JOIN DPTIPDOCPRO
+//               nPorPe:="16"  deberá ser reemplazado por la suma de las columnas
+
 
 #include "dpxbase.ch"
 
@@ -1151,7 +1154,7 @@ PROCE MAIN(oCom)
                nIvaRetOri:=oDp:aRow[1]
                dFchRti:=oDp:aRow[2]
             ENDIF
-            // Si estÃ¡ encendida 'Retenciones en Libro' entonces debe ser del mismo perÃ­odo la retención
+            // Si está encendida 'Retenciones en Libro' entonces debe ser del mismo perÃ­odo la retención
             IF oCom:lCLibRti .AND. LEFT(DTOS(dFchRti),6)<>LEFT(DTOS(oTable:DOC_FECHA),6)
                cNumRti:=""
                nIvaRetOri:=0
