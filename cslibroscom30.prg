@@ -1,14 +1,22 @@
 // Programa   : CSLIBROSCOM30 (CSLIBROS 3.0 Libro de Compras)
 // Fecha/Hora : 30/12/2007 16:35:18
-// PropÃ³sito  : Formulario de EmisiÃ³n de Libro de Compras con salida a Excel
-// AplicaciÃ³n : 
+// PropÃ³sito : Formulario de Emisión de Libro de Compras con salida a Excel
+// Aplicación : 
 // Tipo       : STD00000
 
 
 #include "DPXBASE.CH"
 
-PROCE MAIN()
+PROCE MAIN(dDesde,dHasta)
   LOCAL oBtn,oFont,oData,nClrText:=CLR_BLUE,oTable,nAt,aForms
+  LOCAL cMemo:=""
+
+  DEFAULT dDesde:=FCHINIMES(oDp:dFecha),;
+          dHasta:=FCHFINMES(oDp:dFecha)
+
+
+ 
+
 
 //  DEFAULT lConEsp:=.F., lPlanilla:=.F.
 
@@ -21,12 +29,12 @@ PROCE MAIN()
 
   oData:=DATASET("CSLIBROS","ALL")
 
-  oCom:=DPEDIT():New("CSLIBROS 3.0 para AdaptaPro. EmisiÃ³n Libro de Compras","CSLIBROSCOM.edt","oCom",.T.)
+  oCom:=DPEDIT():New("CSLIBROS 3.0 para AdaptaPro. Emisión Libro de Compras","CSLIBROSCOM.edt","oCom",.T.)
   oCom:cFileChm     :=""
   oCom:cTopic       :=""
 
-  oCom:dDesde       :=FCHINIMES(oDp:dFecha)
-  oCom:dHasta       :=FCHFINMES(oDp:dFecha)
+  oCom:dDesde       :=dDesde // FCHINIMES(oDp:dFecha)
+  oCom:dHasta       :=dHasta // FCHFINMES(oDp:dFecha)
 
   oCom:lCSombCab :=oData:Get("lCSombCab" ,.T.)
   oCom:lCSombTot :=oData:Get("lCSombTot" ,.T.)
@@ -59,19 +67,21 @@ PROCE MAIN()
   oData:End(.F.)
 
   oCom:aMeses :={"Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"} 
-  oCom:nMes   :=MONTH(oDp:dFecha)
-  oCom:nAno   :=YEAR(oDp:dFecha)
+  oCom:nMes   :=MONTH(dDesde)
+  oCom:nAno   :=YEAR(dDesde)
   oCom:nRecord:=0
   oCom:cCodSuc:=oDp:cSucursal
 *  oCom:lConEsp:=lConEsp
   oCom:dFecha :=oDp:dFecha
   oCom:aForms :=aForms
+  oCom:cMemo  :="Esta funcionalidad esta en fase revisión y Actualización,"+CRLF+;
+                "aún no esta en producción, agradecemos su validación."
 
   @ 6.8, 1.0 FOLDER oCom:oFolder ITEMS "Libro","Valores","Excel"
 
   SETFOLDER( 1)
 
-  @ 3,2 SAY "AÃ±o:" RIGHT
+  @ 3,2 SAY "Año:" RIGHT
   @ 3,2 SAY "Mes:" RIGHT
   @ 3,1 SAY GetFromVar("{oDp:xDPSUCURSAL}")+":"
   @ 4,1 SAY "Forma Excel"
@@ -102,6 +112,8 @@ PROCE MAIN()
   @ 3,2 SAY oCom:oSucNombre PROMPT SQLGET("DPSUCURSAL","SUC_DESCRI","SUC_CODIGO"+GetWhere("=",oCom:cCodSuc));
             UPDATE
 
+  @ 3,5 GET oCom:cMemo MULTILINE READONLY
+
   @ 02,01 METER oCom:oMeter VAR oCom:nRecord
 
   SETFOLDER( 2)
@@ -111,46 +123,46 @@ PROCE MAIN()
   @ 3,1 GET oCom:oNCLenRs  VAR oCom:nCLenRs
   oCom:oNCLENRS:cMsg    :="Indique Longitud"
   oCom:oNCLENRS:cToolTip:="Indique Longitud"
-  @ oCom:oNCLENRS:nTop-08,oCom:oNCLENRS:nLeft SAY "Longitud de RazÃ³n Social" PIXEL;
+  @ oCom:oNCLENRS:nTop-08,oCom:oNCLENRS:nLeft SAY "Longitud de Razón Social" PIXEL;
                             SIZE NIL,7 FONT oFont COLOR nClrText,NIL 
 
   @ 4,1 GET oCom:oNCPorAju VAR oCom:nCPorAju
   oCom:oNCPORAJU:cMsg    :="Indique Porcentaje"
   oCom:oNCPORAJU:cToolTip:="Indique Porcentaje"
-  @ oCom:oNCPORAJU:nTop-08,oCom:oNCPORAJU:nLeft SAY "Porcentaje Ajuste TamaÃ±o" PIXEL;
+  @ oCom:oNCPORAJU:nTop-08,oCom:oNCPORAJU:nLeft SAY "Porcentaje Ajuste Tamaño" PIXEL;
                             SIZE NIL,7 FONT oFont COLOR nClrText,NIL 
 
 
   @ 5,1 CHECKBOX oCom:oCSepAju VAR oCom:lCSepAju PROMPT ANSITOOEM("Separar Ajustes en un Cuadro Distinto") ON CHANGE oCom:ChangeControls() WHEN oCom:nCForm<>2
   @ 6,1 CHECKBOX oCom:lCSepMil PROMPT ANSITOOEM("Incluir Separadores de Mil")
-  @ 7,1 CHECKBOX oCom:oCRetAju VAR oCom:lCRetAju PROMPT ANSITOOEM("Colocar Retenciones Fuera del PerÃ­odo en Ajustes") WHEN oCom:lCSepAju .AND. oCom:nCForm<>2
-  @ 8,1 CHECKBOX oCom:oCDocAju VAR oCom:lCDocAju PROMPT ANSITOOEM("Colocar Documentos Fuera del PerÃ­odo en Ajustes") WHEN oCom:lCSepAju .AND. oCom:nCForm<>2
-  @ 9,1 CHECKBOX oCom:oCHojAju VAR oCom:lCHojAju PROMPT ANSITOOEM("Colocar Ajustes en la misma Hoja de CÃ¡lculo") WHEN oCom:lCSepAju .AND. oCom:nCForm<>2
-  @ 10,1 CHECKBOX oCom:oCSepIva VAR oCom:lCSepIva PROMPT ANSITOOEM("Separar en Filas distintas la alicuota general y la reducida")
+  @ 7,1 CHECKBOX oCom:oCRetAju VAR oCom:lCRetAju PROMPT ANSITOOEM("Colocar Retenciones Fuera del Perí­odo en Ajustes") WHEN oCom:lCSepAju .AND. oCom:nCForm<>2
+  @ 8,1 CHECKBOX oCom:oCDocAju VAR oCom:lCDocAju PROMPT ANSITOOEM("Colocar Documentos Fuera del Perí­odo en Ajustes") WHEN oCom:lCSepAju .AND. oCom:nCForm<>2
+  @ 9,1 CHECKBOX oCom:oCHojAju VAR oCom:lCHojAju PROMPT ANSITOOEM("Colocar Ajustes en la misma Hoja de Cálculo") WHEN oCom:lCSepAju .AND. oCom:nCForm<>2
+  @ 10,1 CHECKBOX oCom:oCSepIva VAR oCom:lCSepIva PROMPT ANSITOOEM("Separar en Filas distintas la alícuota general y la reducida")
   @ 11,1 CHECKBOX oCom:lCRifCab PROMPT ANSITOOEM("Agregar Rif en Cabecera")
-  @ 12,1 CHECKBOX oCom:lCNumPag PROMPT ANSITOOEM("Numerar PÃ¡ginas")
-  @ 13,1 CHECKBOX oCom:lCConDin PROMPT ANSITOOEM("Consecutivo DinÃ¡mico")
+  @ 12,1 CHECKBOX oCom:lCNumPag PROMPT ANSITOOEM("Numerar Páginas")
+  @ 13,1 CHECKBOX oCom:lCConDin PROMPT ANSITOOEM("Consecutivo Dinámico")
      
   SETFOLDER( 3)
 
-  @ 1,1 CHECKBOX oCom:lEDetIdio PROMPT ANSITOOEM("DetecciÃ³n AutomÃ¡tica de Idioma") ON CHANGE oCom:ChangeControls()
-  @ 2,1 CHECKBOX oCom:lEDetSep  PROMPT ANSITOOEM("DetecciÃ³n AutomÃ¡tica de Separadores") ON CHANGE oCom:ChangeControls()
+  @ 1,1 CHECKBOX oCom:lEDetIdio PROMPT ANSITOOEM("Detección Automática de Idioma") ON CHANGE oCom:ChangeControls()
+  @ 2,1 CHECKBOX oCom:lEDetSep  PROMPT ANSITOOEM("Detección Automática de Separadores") ON CHANGE oCom:ChangeControls()
   @ 4,1 GET oCom:oCEFUNCEL  VAR oCom:cEFunCel WHEN !oCom:lEDetIdio
-  oCom:oCEFUNCEL:cMsg     :="Indique la como se describe literalmente la funciÃ³n"
-  oCom:oCEFUNCEL:cToolTip :="Indique la como se describe literalmente la funciÃ³n"
-  @ oCom:oCEFUNCEL:nTop-08,oCom:oCEFUNCEL:nLeft SAY "FunciÃ³n Celda" PIXEL;
+  oCom:oCEFUNCEL:cMsg     :="Indique la como se describe literalmente la función"
+  oCom:oCEFUNCEL:cToolTip :="Indique la como se describe literalmente la función"
+  @ oCom:oCEFUNCEL:nTop-08,oCom:oCEFUNCEL:nLeft SAY "Función Celda" PIXEL;
                             SIZE NIL,7 FONT oFont COLOR nClrText,NIL 
 
   @ 5,1 GET oCom:oCEFUNSUM  VAR oCom:cEFunSum WHEN !oCom:lEDetIdio
-  oCom:oCEFUNSUM:cMsg     :="Indique la como se describe literalmente la funciÃ³n"
-  oCom:oCEFUNSUM:cToolTip :="Indique la como se describe literalmente la funciÃ³n"
-  @ oCom:oCEFUNSUM:nTop-08,oCom:oCEFUNSUM:nLeft SAY "FunciÃ³n Suma" PIXEL;
+  oCom:oCEFUNSUM:cMsg     :="Indique la como se describe literalmente la función"
+  oCom:oCEFUNSUM:cToolTip :="Indique la como se describe literalmente la función"
+  @ oCom:oCEFUNSUM:nTop-08,oCom:oCEFUNSUM:nLeft SAY "Función Suma" PIXEL;
                             SIZE NIL,7 FONT oFont COLOR nClrText,NIL 
 
   @ 6,1 GET oCom:oCEFUNSI  VAR oCom:cEFunSi WHEN !oCom:lEDetIdio
-  oCom:oCEFUNSI:cMsg     :="Indique la como se describe literalmente la funciÃ³n"
-  oCom:oCEFUNSI:cToolTip :="Indique la como se describe literalmente la funciÃ³n"
-  @ oCom:oCEFUNSI:nTop-08,oCom:oCEFUNSI:nLeft SAY "FunciÃ³n Si" PIXEL;
+  oCom:oCEFUNSI:cMsg     :="Indique la como se describe literalmente la función"
+  oCom:oCEFUNSI:cToolTip :="Indique la como se describe literalmente la función"
+  @ oCom:oCEFUNSI:nTop-08,oCom:oCEFUNSI:nLeft SAY "Función Si" PIXEL;
                             SIZE NIL,7 FONT oFont COLOR nClrText,NIL 
 
   @ 8,1 GET oCom:oCESEPMIL VAR oCom:cESepMil WHEN !oCom:lEDetSep
@@ -173,7 +185,7 @@ PROCE MAIN()
 
 
   SETFOLDER(0)
-  
+/*  
   @09, 33 SBUTTON oBtn ;
           SIZE 42, 23 FONT oFont;
           FILE "BITMAPS\RUN.BMP" ;
@@ -194,10 +206,11 @@ PROCE MAIN()
           COLORS CLR_BLACK, { CLR_WHITE, CLR_HGRAY, 1 };
           ACTION (CursorWait(),;
                   oCom:Close())
+*/
 
-  oCom:Activate(NIL)
+  oCom:Activate({||oCom:INICIO()})
 
-Return nil
+RETURN oCom
 
 /*
 // Grabar Empresa
@@ -237,7 +250,7 @@ FUNCTION LibCompra(oCom)
   oData:End(.t.)
 
   EJECUTAR("CSLIBROSCOM3001",oCom) // Todo se unifica en un solo proceso
-//  MsgInfo("El programa CSLIBROSCOM3001 estÃ¡ en desarrollo","InformaciÃ³n")
+//  MsgInfo("El programa CSLIBROSCOM3001 está en desarrollo","Información")
 
 RETURN .T.
 
@@ -280,5 +293,48 @@ IF oCom:lEDetSep
    oCom:oCESEPLIS:Refresh()
 ENDIF
 RETURN .T.
+
+
+FUNCTION INICIO()
+   LOCAL oCursor,oBar,oBtn,oFont,oCol
+   LOCAL oDlg:=oCom:oDlg
+   LOCAL nLin:=0
+
+   DEFINE CURSOR oCursor HAND
+   DEFINE BUTTONBAR oBar SIZE 52+15,60-15+15 OF oDlg 3D CURSOR oCursor
+   DEFINE FONT oFont  NAME "Tahoma"   SIZE 0, -14 BOLD
+
+
+   DEFINE BUTTON oBtn;
+          OF oBar;
+          NOBORDER;
+          FONT oFont;
+          FILENAME "BITMAPS\RUN.BMP",NIL,"BITMAPS\RUNG.BMP";
+          TOP PROMPT "Ejecutar"; 
+          ACTION (CursorWait(),;
+                  oCom:dDesde:=CTOD("01/"+STRZERO(oCom:oMes:nAt,2)+"/"+STRZERO(oCom:nAno)),;
+                  oCom:dHasta:=FCHFINMES(oCom:dDesde),;
+                  oCom:LIBCOMPRA(oCom),;
+                  EJECUTAR("IVALOAD",oCom:dFecha))
+
+   oBtn:cToolTip:="Guardar"
+
+   oCom:oBtnRun:=oBtn
+
+
+   DEFINE BUTTON oBtn;
+          OF oBar;
+          NOBORDER;
+          FONT oFont;
+          FILENAME "BITMAPS\XSALIR.BMP";
+          TOP PROMPT "Cerrar"; 
+          ACTION (oGRU:Cancel()) CANCEL
+
+   oBar:SetColor(CLR_BLACK,oDp:nGris)
+
+   AEVAL(oBar:aControls,{|o,n| o:SetColor(CLR_BLACK,oDp:nGris) })
+
+RETURN .T.
+
 
 

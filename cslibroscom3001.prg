@@ -1,16 +1,16 @@
 // Programa   : CSLIBROSCOM3001
 // Fecha/Hora : 30/12/2007 18:44:46
-// Prop贸sito  : Emite el Libro de Compras con salida EXCEL
-// Aplicaci贸n : 
+// Prop髎ito  : Emite el Libro de Compras con salida EXCEL
+// Aplicaci髇 : 
 // Tipo       : STD00000
 // Creado Por : Daniel Ram铆rez
-// Observaci贸n: Llamado por CSLIBROSCOM30
+// Observaci髇: Llamado por CSLIBROSCOM30
 // Modificaciones: (AG20080407)  Todas las modificaciones de Abril del 2,3 y 7 hacen referencia
 //                               a cambios para que colocara las importaciones en su columna correspondiente.
-//                 (DR20110606a) Se incorpora columna de n煤mero de retenci贸n
-//                 (DR20110606b) Se corrige BUG en descripci贸n de totalizaci贸n de las compras
-//                 (DR20110606c) Se cambia n煤mero de retenci贸n (DOCNUM por NUMTRA)
-//                 (DR20110606d) Se corrige BUG en c谩lculo de porcentaje de retenci贸n
+//                 (DR20110606a) Se incorpora columna de n煤mero de retenci髇
+//                 (DR20110606b) Se corrige BUG en descripci髇 de totalizaci髇 de las compras
+//                 (DR20110606c) Se cambia n鷐ero de retenci髇 (DOCNUM por NUMTRA)
+//                 (DR20110606d) Se corrige BUG en c谩lculo de porcentaje de retenci髇
 //                 (AG20110707a) Se condiciona para que si tiene alicuota reducida y general, entonces genere linea
 //                               adicional solo con el monto de la alicuota reducida (sin neto ni exentos)
 //                 (AG20110707b) Se agrega a la clave el IVA, ya que sin esto no mostraba la linea adicional
@@ -20,9 +20,9 @@
 //                               alicuotas de IVA, las trabaje como las facturas normales.
 //                 (DR20110915a) Se corrige BUG en sumatoria de los exentos
 //                 (DR20130618a) Se coloca el nombre largo de empresa
-//                 (DR20130618b) Se agrega columna de fecha de emisi贸n del comprobante de retenci贸n
-//                 (DR20130618c) No es d茅bito fiscal sino cr茅dito fiscal
-//                 (DR20130618d) Se cambia nombre de columna de comprobante de retenci贸n
+//                 (DR20130618b) Se agrega columna de fecha de emisi髇 del comprobante de retenci髇
+//                 (DR20130618c) No es d閎ito fiscal sino cr閐ito fiscal
+//                 (DR20130618d) Se cambia nombre de columna de comprobante de retenci髇
 //                 (DR20131112a) Se agrega columna de porcentaje de retenci貌n
 //                 (AG20170926) CAMBIOS IVA REDUCIDO PAGOS ELECTRONICOS
 
@@ -40,11 +40,11 @@ PROCE MAIN(oCom)
    LOCAL aLim2,nCol21,nCol22,nCol23
    LOCAL nDemoMax:=2,nDemoLin:=1,cLetraBase,nBaseCol
    LOCAL oExcel,oHoja,oHoja2,oHojax,oHojaSuma,oLanguage,nRowIni,nRowIni2,nRowFin,nRowFin2,cRange1,cRange2,cRange3,cRange4,aResumen:=ARRAY(8,4),nRowInicab,lContri
-   // Revisi贸n 03/03/2006
+   // Revisi髇 03/03/2006
    LOCAL cEmpRif:="",nDinamic
    // Compatibilidad
    LOCAL cMascPor,cMascMon
-   // M茅todo Copy&Paste (DR20060326)
+   // M閠odo Copy&Paste (DR20060326)
    LOCAL cClip,cClipSuma,cSuma27,oClip,nPegaIni,nPegaIniSu,oRange,oTexto
    // Adaptaciones DataPro Windows 
    LOCAL cSql,oTable,cEmpresa,cWhere,nIva,nFecha,nNumero,nCodigo,nTipo,aLine,nAt,aTipIva,aTipDoc
@@ -86,7 +86,7 @@ PROCE MAIN(oCom)
 //   ENDIF
    //
 
-   cEmpresa:=oDp:cEmpLargo // DR20130618a oDp:cEmpresa
+   cEmpresa:=oDp:cEmpresa // 03/04/2024 oDp:cEmpLargo // DR20130618a oDp:cEmpresa
    dFecha1:=CTOD("01/"+STRZERO(oCom:nMes,2)+"/"+STRZERO(oCom:nAno,4))
    dFecha2:=FCHFINMES(dFecha1)
 
@@ -120,7 +120,7 @@ PROCE MAIN(oCom)
    ENDIF
    
 *******BUSCA LOS DOCUMENTOS QUE VAN EN EL LIBRO DE COMPRAS
-   aTipDoc:=ASQL("SELECT TDC_TIPO FROM DPTIPDOCPRO WHERE TDC_LIBCOM=1")
+  //  aTipDoc:=ASQL("SELECT TDC_TIPO FROM DPTIPDOCPRO WHERE TDC_LIBCOM=1") JN 03/04/2024 INNECESARIO SUSTITIDO POR INNER JOIN
 
 *******BUSCA LOS TIPOS DE ALICUOTAS DE IVA
    aTipIva:=ASQL("SELECT TIP_CODIGO FROM DPIVATIP")
@@ -234,16 +234,16 @@ PROCE MAIN(oCom)
       AADD(aCabecera,padc('Fecha',11))
       AADD(aCabecera,space(15))
       AADD(aCabecera,space(oCom:nCLenRs))
-      AADD(aCabecera,Padc("N煤mero de",14)) // DR20110606a space(1)) // DR20130618a
+      AADD(aCabecera,Padc("N鷐ero de",14)) // DR20110606a space(1)) // DR20130618a
       AADD(aCabecera,Padc("Fecha",11)) // DR20130618b
-      AADD(aCabecera,Padc('N煤m.Planilla',15))
+      AADD(aCabecera,Padc('N鷐.Planilla',15))
 // DR20130618b. Esto ya no va      AADD(aCabecera,space(1))
-      AADD(aCabecera,padc("N煤mero",10))
+      AADD(aCabecera,padc("N鷐ero",10))
       AADD(aCabecera,space(10))
-      AADD(aCabecera,padc("N煤mero",10))
+      AADD(aCabecera,padc("N鷐ero",10))
       AADD(aCabecera,space(10))
       AADD(aCabecera,space(10))
-      AADD(aCabecera,padc("N煤mero de",10))
+      AADD(aCabecera,padc("N鷐ero de",10))
       AADD(aCabecera,padc("Total Compras",15))
       AADD(aCabecera,padc("Compras",15))
       IF oCom:nCForm=1 .OR. oCom:nCForm=4
@@ -271,7 +271,7 @@ PROCE MAIN(oCom)
       AADD(aCabecera,padc("IVA Retenido",15))
       AADD(aCabecera,space(15))
 //      IF oCom:lCColRti
-//         AADD(aCabecera,"N煤mero de")
+//         AADD(aCabecera,"N鷐ero de")
 //      ENDIF
       //Segunda Linea
       AADD(aCabecera,padc("Oper",7))
@@ -279,13 +279,13 @@ PROCE MAIN(oCom)
       AADD(aCabecera,space(15))
       AADD(aCabecera,space(oCom:nCLenRs))
       AADD(aCabecera,PADC("Comprobante de",14)) // DR20110606a space(1)) // DR20130618a
-      AADD(aCabecera,PADC("de Emisi贸n",11)) // DR20130618b
-      AADD(aCabecera,padc("de Importaci贸n",15))
+      AADD(aCabecera,PADC("de Emisi髇",11)) // DR20130618b
+      AADD(aCabecera,padc("de Importaci髇",15))
 // DR20130618b. Esto no va      AADD(aCabecera,space(1))
       AADD(aCabecera,padc("de",10))
-      AADD(aCabecera,padc("N煤m.Ctrol.",10))
-      AADD(aCabecera,padc("Nota D茅b.",10))
-      AADD(aCabecera,padc("N煤mero de",10))
+      AADD(aCabecera,padc("N鷐.Ctrol.",10))
+      AADD(aCabecera,padc("Nota D閎.",10))
+      AADD(aCabecera,padc("N鷐ero de",10))
       AADD(aCabecera,padc("Tipo de",10))
       AADD(aCabecera,padc("Factura",10))
       AADD(aCabecera,padc("Incluyendo",15))
@@ -311,7 +311,7 @@ PROCE MAIN(oCom)
          AADD(aCabecera,padc("%",7))
          AADD(aCabecera,padc("Impuesto",15))
       ENDIF
-      AADD(aCabecera,padc("Retenci贸n",15)) // DR20131112a. Columna de % de IVA retenido
+      AADD(aCabecera,padc("Retenci髇",15)) // DR20131112a. Columna de % de IVA retenido
       AADD(aCabecera,padc("Por el",15))
       AADD(aCabecera,padc("IVA",15))
 //      IF oCom:lCColRti
@@ -321,8 +321,8 @@ PROCE MAIN(oCom)
       AADD(aCabecera,padc("Nro.",7))
       AADD(aCabecera,padc('Factura',11))
       AADD(aCabecera,padc("R.I.F.",15))
-      AADD(aCabecera,padc('Nombre o Raz贸n Social',oCom:nCLenRs))
-      AADD(aCabecera,"Retenci贸n de IVA") // DR20110606a space(1)) // DR20130618a
+      AADD(aCabecera,padc('Nombre o Raz髇 Social',oCom:nCLenRs))
+      AADD(aCabecera,"Retenci髇 de IVA") // DR20110606a space(1)) // DR20130618a
       AADD(aCabecera,"del Comprobante") // DR20130618b
       AADD(aCabecera,padc("["+"Forma D"+"]",15))
 // DR20130618b. Esto ya no va      AADD(aCabecera,space(1))
@@ -354,7 +354,7 @@ PROCE MAIN(oCom)
       AADD(aCabecera,padc("Comprador",15))
       AADD(aCabecera,padc("Percibido",15))
 //      IF oCom:lCColRti
-//         AADD(aCabecera,"Retenci贸n")
+//         AADD(aCabecera,"Retenci髇")
 //      ENDIF
       FOR nI := 1 TO LEN(aCabecera)
           aCabecera[nI]:=ALLTRIM(aCabecera[nI])
@@ -568,11 +568,11 @@ PROCE MAIN(oCom)
    nPegaIniSu:=nRow // Copy&Paste
 
 /*
-   oTable:Replace("DOC_OPERAC",STRZERO(0,6)) // N煤mero de Transacci贸n
+   oTable:Replace("DOC_OPERAC",STRZERO(0,6)) // N鷐ero de Transacci髇
    oTable:Replace("DOC_FACAFE",SPACE(10))    // Factura Afectada
    oTable:Replace("DOC_MTOIVA",0        )    // Alicuota IVA
    oTable:Replace("DOC_EXONER",0        )    // Exento
-   oTable:Replace("DOC_MTORTI",0        )    // Monto de Retenci贸n RTI
+   oTable:Replace("DOC_MTORTI",0        )    // Monto de Retenci髇 RTI
 
    oTable:Gotop()
 
@@ -636,7 +636,7 @@ PROCE MAIN(oCom)
             "       MOV_TOTAL "+;
             " FROM DPDOCPRO "+;
             " INNER JOIN DPPROVEEDOR ON DOC_CODIGO=PRO_CODIGO "+;
-            " INNER JOIN DPTIPDOCPRO ON DOC_TIPDOC=TDC_TIPO "+;
+            " INNER JOIN DPTIPDOCPRO ON DOC_TIPDOC=TDC_TIPO AND TDC_LIBCOM=1 "+;
             " LEFT JOIN DPPROVEEDORCERO ON DOC_CODSUC=CCG_CODSUC AND "+;
             "                              DOC_TIPDOC=CCG_TIPDOC AND "+;
             "                              DOC_NUMERO=CCG_NUMDOC "+;
@@ -652,10 +652,12 @@ PROCE MAIN(oCom)
             "                          DOC_TIPTRA=RTI_TIPTRA "+;
             " WHERE DOC_CODSUC "+GetWhere("=",oCom:cCodSuc)+cWhere+;
             " AND DOC_TIPTRA='D' "+;
-            " AND " + GetWhereOr("DOC_TIPDOC",aTipDoc)+;
             " AND " + GetWhereAnd("DOC_FCHDEC",dFecha1,dFecha2)+;
             " ORDER BY DOC_NUMERO, DOC_FECHA, MOV_IVA "
 
+//  " AND " + GetWhereOr("DOC_TIPDOC",aTipDoc)+; 04/04/2024, sustituido por TDC_LIBCOM=1
+
+// ? CLPCOPY(cSql)
       oTable:=OpenTable(cSql,.T.)
 
 //IF DAY(dFchCount)=16
@@ -663,12 +665,12 @@ PROCE MAIN(oCom)
 //ENDIF
 
 **************AG20080305
-   oTable:Replace("DOC_OPERAC",STRZERO(0,6)) // N煤mero de Transacci贸n
+   oTable:Replace("DOC_OPERAC",STRZERO(0,6)) // N鷐ero de Transacci髇
    oTable:Replace("DOC_FACAFE",SPACE(10))    // Factura Afectada
    oTable:Replace("DOC_MTOIVA",0        )    // Alicuota IVA
    oTable:Replace("DOC_EXONER",0        )    // Exento
-   oTable:Replace("DOC_MTORTI",0        )    // Monto de Retenci贸n RTI
-   oTable:Replace("MOV_BASE",0        )    // Monto de Retenci贸n RTI
+   oTable:Replace("DOC_MTORTI",0        )    // Monto de Retenci髇 RTI
+   oTable:Replace("MOV_BASE",0        )    // Monto de Retenci髇 RTI
 
 
    oTable:Gotop()
@@ -809,6 +811,8 @@ PROCE MAIN(oCom)
 
     nPorGn:=EJECUTAR("IVACAL","GN",2,oTabR:CCD_FECHA)
     nPorRd:=EJECUTAR("IVACAL","RD",2,oTabR:CCD_FECHA)
+
+// ? nPorGn,"nPorGn"
 
     nNetoR:=oTabR:EX+(oTabR:GN+(oTabR:GN*(nPorGn/100)))+(oTabR:RD+(oTabR:RD*(nPorRd/100)))
 
@@ -1122,7 +1126,7 @@ PROCE MAIN(oCom)
 *****AG20110707b
 
          nLine  :=0
-         nRecord:=oTable:Recno()       // Primer Rengl贸n
+         nRecord:=oTable:Recno()       // Primer Rengl髇
 
          nBase:=0
          nExento:=0
@@ -1147,7 +1151,7 @@ PROCE MAIN(oCom)
                nIvaRetOri:=oDp:aRow[1]
                dFchRti:=oDp:aRow[2]
             ENDIF
-            // Si est谩 encendida 'Retenciones en Libro' entonces debe ser del mismo per铆odo la retenci贸n
+            // Si est谩 encendida 'Retenciones en Libro' entonces debe ser del mismo per铆odo la retenci髇
             IF oCom:lCLibRti .AND. LEFT(DTOS(dFchRti),6)<>LEFT(DTOS(oTable:DOC_FECHA),6)
                cNumRti:=""
                nIvaRetOri:=0
@@ -1337,11 +1341,11 @@ PROCE MAIN(oCom)
 
                oTableDoc:=OpenTable(cSql)
                oTableDoc:GoTop()
-               oTableDoc:Replace("DOC_OPERAC",STRZERO(0,6)) // N煤mero de Transacci贸n
+               oTableDoc:Replace("DOC_OPERAC",STRZERO(0,6)) // N鷐ero de Transacci髇
                oTableDoc:Replace("DOC_FACAFE",SPACE(10))    // Factura Afectada
                oTableDoc:Replace("DOC_MTOIVA",0        )    // Alicuota IVA
                oTableDoc:Replace("DOC_EXONER",0        )    // Exento
-               oTableDoc:Replace("DOC_MTORTI",0        )    // Monto de Retenci贸n RTI
+               oTableDoc:Replace("DOC_MTORTI",0        )    // Monto de Retenci髇 RTI
                lContri:= oTableDoc:PRO_CONTRI<>"N"
                cLetraBase:=IIF( !lContri,"R" ,"Q" )
                nBaseCol:=IIF( !lContri,18 ,17 )
@@ -1505,6 +1509,9 @@ PROCE MAIN(oCom)
             cLetraBas8:=IIF( !lContri,"V" ,"U" )
             nBaseCol8:=IIF( !lContri,22 ,21 )
          ENDIF
+
+//? nAlic,"nAlic"
+
          nImp15:=nIva+nIvaIcs+nIvaIcs2
          nImp8:=nIvaRed
 *****AG20110803
@@ -1669,7 +1676,7 @@ PROCE MAIN(oCom)
          ENDIF
 
          IF lDocAnu
-            IF cDocTipo="FAV"
+            IF cDocTipo="FAC"
                cAfec:=PADR(cDocNum,10)
             ENDIF
             nTotDoc:=0
@@ -1799,7 +1806,7 @@ PROCE MAIN(oCom)
                   cClip:=cClip+" "+CHR(9)
                   cClip:=cClip+EJECUTAR("CSSTREXCEL",nBase8,oCom:cESepDec,16,2)+CHR(9)
                ENDIF
-               // DR20110606d. Se agrega divisi贸n entre 100
+               // DR20110606d. Se agrega divisi髇 entre 100
                cClip:=cClip+EJECUTAR("CSSTREXCEL",Rata(nImp8,nBase8)/100,oCom:cESepDec,16,2)+CHR(9)
                cClip:=cClip+EJECUTAR("CSSTREXCEL",nImp8,oCom:cESepDec,16,2)+CHR(9)
             ENDIF
@@ -2194,7 +2201,7 @@ PROCE MAIN(oCom)
       oHoja:Cells( nRow, 14):Value :="Base Imponible"
       oHoja:Cells( nRow, 14):Set("HorizontalAlignment",3)
       oHoja:Cells( nRow, 14):Font:Bold := .T.
-      oHoja:Cells( nRow, 15):Value :="Cr茅dito Fiscal" // DR20130618c
+      oHoja:Cells( nRow, 15):Value :="Cr閐ito Fiscal" // DR20130618c
       oHoja:Cells( nRow, 15):Set("HorizontalAlignment",3)
       oHoja:Cells( nRow, 15):Font:Bold := .T.
       oHoja:Cells( nRow, 18):Value :="el Comprador"
@@ -2208,6 +2215,8 @@ PROCE MAIN(oCom)
       nRowIni:=nRow
       nRowFin2:=nRowFin
 
+      // ViewArray(aResumen)
+
       FOR nI := 1 TO LEN(aResumen)
           oHoja:Cells( nRow, 8):Font:Size := 8
           IF nI=1
@@ -2215,7 +2224,7 @@ PROCE MAIN(oCom)
              oHoja:Cells( nRow, 8):Value := "Total compras Internas No Gravadas"
           ENDIF
           IF nI=2
-             oHoja:Cells( nRow, 8):Value := "Sum. de las Compras de Importaci贸n"
+             oHoja:Cells( nRow, 8):Value := "Sum. de las Compras de Importaci髇"
           ENDIF
           IF nI=3
              oHoja:Cells( nRow, 8):Value := "Sum. de las Compras Internas Afectas Solo Alicuota general"
@@ -2265,7 +2274,7 @@ PROCE MAIN(oCom)
              IF nI=3 .OR. nI=6 .OR. nI=7 .OR. nI=8
 
                 IF nI=3
-                   nPorPe:="12"
+                   nPorPe:="16" // jn 04/04/2023 el IVA debe ser el 16% debe reemplazar la suma de las columnas
                 ENDIF
 
                 IF nI=6
@@ -2569,6 +2578,8 @@ PROCE MAIN(oCom)
                   " AND DOC_NUMERO"+GetWhere("=",oTable:RTI_NUMERO)+" AND DOC_TIPTRA"+GetWhere("=",oTable:RTI_TIPTRA)+;
                   " AND DOC_CODIGO"+GetWhere("=",oTable:RTI_CODIGO)
 
+// ? CLPCOPY(cSql)
+
             oTableDoc:=OpenTable(cSql)
 
             IF oTableDoc:RecCount()=0 .OR. oTableDoc:DOC_ANUFIS .OR. LEFT(DTOS(oTableDoc:DOC_FECHA),6)>=LEFT(DTOS(oTable:RTI_FECHA),6)
@@ -2587,12 +2598,12 @@ PROCE MAIN(oCom)
                LOOP
             ENDIF
             oTableDoc:GoTop()
-            oTableDoc:Replace("DOC_OPERAC",STRZERO(0,6)) // N煤mero de Transacci贸n
+            oTableDoc:Replace("DOC_OPERAC",STRZERO(0,6)) // N鷐ero de Transacci髇
             oTableDoc:Replace("DOC_FACAFE",SPACE(10))    // Factura Afectada
             oTableDoc:Replace("DOC_MTOIVA",0        )    // Alicuota IVA
             oTableDoc:Replace("DOC_EXONER",0        )    // Exento
 
-            oTableDoc:Replace("DOC_MTORTI",0        )    // Monto de Retenci贸n RTI
+            oTableDoc:Replace("DOC_MTORTI",0        )    // Monto de Retenci髇 RTI
             lContri:= oTableDoc:PRO_CONTRI<>"N"
             cLetraBase:=IIF( !lContri,"R" ,"Q" )
             nBaseCol:=IIF( !lContri,18 ,17 )
@@ -2884,7 +2895,7 @@ PROCE MAIN(oCom)
          oHojaX:Cells( nRow, 16):Set( "NumberFormat", cMascMon )
          nRow++
          oHojaX:Cells( nRow, 13):Font:Size := 8
-         oHojaX:Cells( nRow, 13):Value := "Saldo de Ajuste pr贸ximo per铆odo"
+         oHojaX:Cells( nRow, 13):Value := "Saldo de Ajuste pr髕imo per铆odo"
          oHojaX:Cells( nRow, 16):Value := "=+P"+ALLTRIM(STR(INT(nRow-2)))+"-P"+ALLTRIM(STR(INT(nRow-1)))
          oHojaX:Cells( nRow, 16):Set( "NumberFormat", cMascMon )
          cRange1:="M"+ALLTRIM(STR(INT(nRowIni)))+":P"+ALLTRIM(STR(INT(nRow)))
@@ -3075,8 +3086,9 @@ PROCE MAIN(oCom)
       oHoja2:End()
       oHoja2:=NIL
    ENDIF
-   oExcel:End()
+   oExcel:End(.T.)
    oExcel:=NIL
+
 RETURN .T.
 
 FUNCTION NREGISTROS(cOrigen,cCodPro,cNumero,cCodSuc,cTipDoc)
