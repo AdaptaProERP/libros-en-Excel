@@ -5,25 +5,25 @@
 // Tipo       : STD00000
 // Creado Por : Daniel Ram铆rez
 // Observaci贸n: Llamado por CSLIBROSVEN30
-// Modificaciones : (DR20110201a) Se agrega al Libro la posibilidad de que salgan los N煤meros de
+// Modificaciones : (DR20110201a) Se agrega al Libro la posibilidad de que salgan los N鷐eros de
 //                                Factura de Contingencia
-//                  (DR20110606a) Se amplia el formato "general" paraque incluya al n煤mero del comprobante
-//                  (DR20110606b) Se eliminan las columnas "N煤mero de Documento" y "N煤mero de Control" cuando se trata de retenciones IVA.
-//                  (DR20110606c) Se corrige BUG en asignaci贸n de N煤mero de Retenci贸n.
-//                  (DR20110606d) Se ordena por N煤mero Fiscal
-//                  (DR20110617a) Se deshabilita impresi贸n de n煤mero fiscal
+//                  (DR20110606a) Se amplia el formato "general" paraque incluya al n鷐ero del comprobante
+//                  (DR20110606b) Se eliminan las columnas "N鷐ero de Documento" y "N鷐ero de Control" cuando se trata de retenciones IVA.
+//                  (DR20110606c) Se corrige BUG en asignaci贸n de N鷐ero de Retenci贸n.
+//                  (DR20110606d) Se ordena por N鷐ero Fiscal
+//                  (DR20110617a) Se deshabilita impresi贸n de n鷐ero fiscal
 //                  (DR20110728a) Se habilita campo CEDULA en caso de que est茅 lleno
 //                  (DR20110915a) Se habilita posibilidad de que las retenciones fuera de fecha entre en el grupo "Fuera del Per铆odo"
 //                  (DR20110915b) Se cambia fecha de documento en "Ajustes". Ahora ser谩 la fecha de la retenci贸n.Adem谩s, se agrega 
-//                                n煤mero de comprobante
+//                                n鷐ero de comprobante
 //                  (DR20110915c) Se agregan las mismas condiciones de las "retenciones en el libro" para las "retenciones en ajustes"
 //                  (DR20120316a) Se realiza ajuste a la l贸gica de retenciones en ajustes cuando las fechas de documento y retenci贸n son distintas
 //                  (DR20130326a) Se agrega GoTop() para evitar problema de inconsistencia en la suma
 //                  (DR20130621a) Se usa el nombre largo de las empresas
 //                  (DR20130621b) Se agrega columna de fecha de retenci贸n
 //                  (AG20170212) Se condiciona para que separe el resumen entre iva general (12%) y pagos electronicos (10%)
-//                  (AG20170926) Se colocan ambios para nuevas alicuotas de iva reducido 9% y 7%.
-
+//                  (AG20170926) Se colocan Cambios para nuevas alicuotas de iva reducido 9% y 7%.
+// JN 04/04/2024 RTI_FCHEMI REEMPLAZADO POR RTI_FCHDEC 
 #include "dpxbase.ch"
 
 PROCE MAIN(oVen)
@@ -90,7 +90,8 @@ PROCE MAIN(oVen)
 
    cWhere:=""
    IF !(oVen:oModelo:nAt==LEN(oVen:oModelo:aItems))
-      cWhere:=" (DOC_MODFIS"+GetWhere("=",oVen:cModelo)+" OR DOC_TIPDOC='RTI')"
+      // cWhere:=" (DOC_MODFIS"+GetWhere("=",oVen:cModelo)+" OR DOC_TIPDOC='RTI')"
+      cWhere:=" (SFI_MODELO"+GetWhere("=",oVen:cModelo)+" OR DOC_TIPDOC='RTI')"
    ENDIF
 
    FOR nI := 1 TO LEN(aResumen)
@@ -125,7 +126,11 @@ PROCE MAIN(oVen)
    // DR20110201a. Se agrega condici贸n para FCT
    // DR20110201b. Se ordena por Control Fiscal
    // DR20110728a. Se agrega condici贸n para CLI_CEDULA
-   // DR20120316a. Se agrega RTI_FCHEMI
+   // DR20120316a. Se agrega RTI_FCHDEC
+
+   // JN 04/04/2024
+   aTipDoc:={}
+   AADD(aTipDoc,'RTI')
 
    cSql:="SELECT DOC_NETO  ,"+;
          "       DOC_FECHA ,"+;
@@ -136,7 +141,7 @@ PROCE MAIN(oVen)
          "       DOC_CODIGO,"+;
          "       DOC_CODSUC,"+;
          "       IF(DOC_CODIGO='0000000000',DPCLIENTESCERO.CCG_TIPPER,CLI_TIPPER)            AS CLI_TIPPER ,"+;
-         "       IF(DOC_CODIGO='0000000000',DPCLIENTESCERO.CCG_RIF   ,IF(DPCLIENTES.CLI_CEDULA IS NOT NULL AND DPCLIENTES.CLI_CEDULA<>'',DPCLIENTES.CLI_CEDULA,DPCLIENTES.CLI_RIF   )) AS CLI_RIF    ,"+;
+         "       IF(DOC_CODIGO='0000000000',DPCLIENTESCERO.CCG_RIF   ,IF(DPCLIENTES.CLI_RIF IS NOT NULL AND DPCLIENTES.CLI_RIF<>'',DPCLIENTES.CLI_RIF,DPCLIENTES.CLI_RIF   )) AS CLI_RIF    ,"+;
          "       IF(DOC_CODIGO='0000000000',DPCLIENTESCERO.CCG_NOMBRE,DPCLIENTES.CLI_NOMBRE) AS CLI_NOMBRE ,"+;
          "       IF(DOC_TIPDOC='FAV' OR DOC_TIPDOC='FCT',DOC_NUMERO              ,SPACE(10)             ) AS DOC_FACTURA,"+;
          "       IF(DOC_TIPDOC='DEB'       ,DOC_NUMERO              ,SPACE(10)             ) AS DOC_DEBITO ,"+;
@@ -164,11 +169,12 @@ PROCE MAIN(oVen)
          "       CLI_ENOTRA, "+;
          "       DOC_ACT,    "+;
          "       DOC_DOCORG, "+;
-         "       RTI_FCHEMI, "+;
+         "       RTI_FCHDEC, "+;
          "       MOV_TOTAL, MOV_IMPOTR"+;
          " FROM DPDOCCLI "+;
-         " INNER JOIN DPCLIENTES  ON DOC_CODIGO=CLI_CODIGO "+;
-         " INNER JOIN DPTIPDOCCLI ON DOC_TIPDOC=TDC_TIPO   "+;
+         " INNER JOIN DPCLIENTES     ON DOC_CODIGO=CLI_CODIGO "+;
+         " LEFT  JOIN DPSERIEFISCAL  ON DOC_SERFIS=SFI_LETRA "+; 
+         " INNER JOIN DPTIPDOCCLI    ON DOC_TIPDOC=TDC_TIPO AND (TDC_LIBVTA=1 OR DOC_TIPDOC"+GetWhere("=","RTI")+")"+;
          " LEFT  JOIN DPCLIENTESCERO ON DOC_CODSUC=CCG_CODSUC AND "+;
          "            DOC_TIPDOC=CCG_TIPDOC AND "+;
          "            DOC_NUMERO=CCG_NUMDOC "+;
@@ -179,14 +185,19 @@ PROCE MAIN(oVen)
          "                          DOC_TIPDOC=RTI_TIPDOC AND "+;
          "                          DOC_NUMERO=RTI_NUMERO AND "+;
          "                          DOC_TIPTRA=RTI_TIPTRA "+;
-         " WHERE "+GetWhereAnd("DOC_FECHA",dFecha1,dFecha2)+" AND "+;
-         "   DOC_CODSUC "+GetWhere("=",oVen:cCodSuc)+;
-         "   AND DOC_TIPTRA='D' "+;
-         "   AND " + GetWhereOr("DOC_TIPDOC",aTipDoc)+" OR DOC_TIPDOC='TIK' OR DOC_TIPDOC='RTI'"+;
-         "   AND " + GetWhereAnd("DOC_FECHA",dFecha1,dFecha2)+;
-         "   AND (TDC_LIBVTA=1 OR DOC_TIPDOC='RTI') " +;
-         IIF(!empty(cWhere),"       AND "+ cWhere,"")+;
+         " WHERE "+;
+         " DOC_CODSUC "+GetWhere("=",oVen:cCodSuc)+" AND "+;
+         GetWhereAnd("DOC_FECHA",dFecha1,dFecha2)+" AND "+;
+         " DOC_TIPTRA='D' "+;
+         IIF(!empty(cWhere)," AND "+ cWhere,"")+;
          " ORDER BY DOC_FECHA, DOC_NUMFIS, DOC_NUMERO,MOV_IVA "
+
+//   "   AND " + GetWhereOr("DOC_TIPDOC",aTipDoc)+;
+// "   AND (TDC_LIBVTA=1 OR DOC_TIPDOC='RTI') " +;
+//  "   AND " + GetWhereOr("DOC_TIPDOC",aTipDoc)+" OR DOC_TIPDOC='TIK' OR DOC_TIPDOC='RTI'"+;
+
+
+? CLPCOPY(cSql),cSql
 
    oTable:=OpenTable(cSql,.T.)
 
@@ -285,15 +296,15 @@ PROCE MAIN(oVen)
       AADD(aCabecera,padc('Fecha',11))
       AADD(aCabecera,space(15))
       AADD(aCabecera,space(oVen:nVLenRs))
-      AADD(aCabecera,Padc("N煤mero de",14)) // DR20130621b
+      AADD(aCabecera,Padc("N鷐ero de",14)) // DR20130621b
       AADD(aCabecera,Padc("Fecha",11)) // DR20130621b
-      AADD(aCabecera,Padc('N煤m.Planilla',15))
-      AADD(aCabecera,padc("N煤mero",10))
+      AADD(aCabecera,Padc('N鷐.Planilla',15))
+      AADD(aCabecera,padc("N鷐ero",10))
       AADD(aCabecera,space(10))
-      AADD(aCabecera,padc("N煤mero",10))
+      AADD(aCabecera,padc("N鷐ero",10))
       AADD(aCabecera,space(10))
       AADD(aCabecera,space(10))
-      AADD(aCabecera,padc("N煤mero de",10))
+      AADD(aCabecera,padc("N鷐ero de",10))
       AADD(aCabecera,padc("Total Ventas",15))
       AADD(aCabecera,padc("Ventas",15))
       IF oVen:nVForm=1 .OR. oVen:nVForm=4 .OR. oVen:nVForm=5
@@ -333,7 +344,7 @@ PROCE MAIN(oVen)
       AADD(aCabecera,padc("IVA Retenido",15))
       AADD(aCabecera,space(15))
       IF oVen:lVColRti
-         AADD(aCabecera,"N煤mero de")
+         AADD(aCabecera,"N鷐ero de")
       ENDIF
       //Segunda Linea
       AADD(aCabecera,padc("Oper",7))
@@ -344,9 +355,9 @@ PROCE MAIN(oVen)
       AADD(aCabecera,PADC("de Emisi贸n",11)) // DR20130618b
       AADD(aCabecera,padc("de Exportaci贸n",15))
       AADD(aCabecera,padc("de",10))
-      AADD(aCabecera,padc("N煤m.Ctrol.",10))
+      AADD(aCabecera,padc("N鷐.Ctrol.",10))
       AADD(aCabecera,padc("Nota D茅b.",10))
-      AADD(aCabecera,padc("N煤mero de",10))
+      AADD(aCabecera,padc("N鷐ero de",10))
       AADD(aCabecera,padc("Tipo de",10))
       AADD(aCabecera,padc("Factura",10))
       AADD(aCabecera,padc("Incluyendo",15))
@@ -660,7 +671,7 @@ PROCE MAIN(oVen)
    nPegaIni:=nRow // Copy&Paste
    nPegaIniSu:=nRow // Copy&Paste
 
-   oTable:Replace("DOC_OPERAC",STRZERO(0,6)) // N煤mero de Transacci贸n
+   oTable:Replace("DOC_OPERAC",STRZERO(0,6)) // N鷐ero de Transacci贸n
    oTable:Replace("DOC_FACAFE",SPACE(10))    // Factura Afectada
    oTable:Replace("DOC_MTOIVA",0        )    // Alicuota IVA
    oTable:Replace("DOC_EXONER",0        )    // Exento
@@ -673,7 +684,7 @@ PROCE MAIN(oVen)
    nNumero:= oTable:FieldPos("DOC_NUMERO")
    nCodigo:= oTable:FieldPos("DOC_CODIGO")
    nTipo  := oTable:FieldPos("DOC_TIPDOC")
-   nNumFis:= oTable:FieldPos("DOC_NUMFIS") // DR20110606d. N煤mero Fiscal
+   nNumFis:= oTable:FieldPos("DOC_NUMFIS") // DR20110606d. N鷐ero Fiscal
 
    // Busca los Impuestos de los Documentos
    WHILE !oTable:Eof() 
@@ -724,7 +735,7 @@ PROCE MAIN(oVen)
 
   aSort  :=ACLONE(oTable:aDataFill)
 
-  // DR20110606d. N煤mero Fiscal.
+  // DR20110606d. N鷐ero Fiscal.
   aSort:=ASORT(oTable:aDataFill,,, { |x, y| DTOS(x[nFec])+x[nNumFis]+x[nDoc] < DTOS(y[nFec])+y[nNumFis]+y[nDoc] })
   oTable:aDataFill:=ACLONE(aSort)
 
@@ -809,7 +820,7 @@ PROCE MAIN(oVen)
          ENDIF
          // DR20120316a. Se modifica la condici贸n de las retenciones en ajustes.
          IF oVen:lVRetFec
-            IF LEFT(DTOS(dFchFacRti),6)=LEFT(DTOS(oTable:DOC_FECHA),6) .AND. IIF(EMPTY(oTable:RTI_FCHEMI),oTable:RTI_FECHA,oTable:RTI_FCHEMI)=dFchFacRti
+            IF LEFT(DTOS(dFchFacRti),6)=LEFT(DTOS(oTable:DOC_FECHA),6) .AND. IIF(EMPTY(oTable:RTI_FCHDEC),oTable:RTI_FECHA,oTable:RTI_FCHDEC)=dFchFacRti
                oTable:Skip()
                LOOP
             ENDIF
@@ -855,7 +866,7 @@ PROCE MAIN(oVen)
 */
          IF (oVen:lVLibRti .OR. lRetAju) .AND. ;
             (LEFT(DTOS(dFchRti),6)<>LEFT(DTOS(oTable:DOC_FECHA),6) .OR. ;
-            (oVen:lVRetFec .AND. IIF(EMPTY(oTable:RTI_FCHEMI),dFchRti,oTable:RTI_FCHEMI)<>oTable:DOC_FECHA))
+            (oVen:lVRetFec .AND. IIF(EMPTY(oTable:RTI_FCHDEC),dFchRti,oTable:RTI_FCHDEC)<>oTable:DOC_FECHA))
             cNumRti:=""
             nIvaRetOri:=0
             dFchRti:=CTOD("")
@@ -869,7 +880,7 @@ PROCE MAIN(oVen)
       cEstado:=oTable:DOC_ESTADO
       dFechaDoc:=oTable:DOC_FECHA
       dFechaRet:=oTable:RTI_FECHA
-      dRtiEmi:=oTable:RTI_FCHEMI // DR20120316a
+      dRtiEmi:=oTable:RTI_FCHDEC // DR20120316a
       dRtiLib:=IIF(EMPTY(dRtiEmi),dFechaRet,dRtiEmi) // DR20130621b
       cRif:=PADR(oTable:CLI_RIF,15)
       cRsocial:=PADR(oTable:CLI_NOMBRE,oVen:nVLenRs)
@@ -1035,7 +1046,7 @@ PROCE MAIN(oVen)
             oTableDoc:=OpenTable(cSql)
 
             oTableDoc:GoTop()
-            oTableDoc:Replace("DOC_OPERAC",STRZERO(0,6)) // N煤mero de Transacci贸n
+            oTableDoc:Replace("DOC_OPERAC",STRZERO(0,6)) // N鷐ero de Transacci贸n
             oTableDoc:Replace("DOC_FACAFE",SPACE(10))    // Factura Afectada
             oTableDoc:Replace("DOC_MTOIVA",0        )    // Alicuota IVA
             oTableDoc:Replace("DOC_EXONER",0        )    // Exento
@@ -1251,7 +1262,7 @@ PROCE MAIN(oVen)
 
       IF lRti
          nIvaRet:=nNetRti*-1
-         cNumRti:=SQLGET("DPDOCCLIRTI","RTI_NUMCLI,RTI_FECHA,RTI_FCHEMI","RTI_CODSUC"+GEtWhere("=",cSucFacRti)+" AND RTI_DOCTIP"+GetWhere("=",cDocTipRti)+" AND RTI_DOCNUM"+GetWhere("=",cNumDocRti)+" AND RTI_TIPTRA='D'") // DR20110606c. cNumDocRti
+         cNumRti:=SQLGET("DPDOCCLIRTI","RTI_NUMCLI,RTI_FECHA,RTI_FCHDEC","RTI_CODSUC"+GEtWhere("=",cSucFacRti)+" AND RTI_DOCTIP"+GetWhere("=",cDocTipRti)+" AND RTI_DOCNUM"+GetWhere("=",cNumDocRti)+" AND RTI_TIPTRA='D'") // DR20110606c. cNumDocRti
          
          // DR20110915a. Si la variable lVRetFec est谩 activa, la condici贸n cambia
 /*
@@ -1978,7 +1989,7 @@ PROCE MAIN(oVen)
              IF nI=3 .OR. nI=6 .OR. nI=7 .OR. nI=8
 
                 IF nI=3
-                   nPorPe:="12"
+                   nPorPe:="16" // JN 04/04/2024 "12"
                 ENDIF
 
                 IF nI=6
@@ -2311,14 +2322,14 @@ PROCE MAIN(oVen)
                   "WHERE DOC_CODSUC"+GetWhere("=",oTable:RTI_CODSUC)+" AND DOC_TIPDOC"+GetWhere("=",oTable:RTI_TIPDOC)+;
                   " AND DOC_NUMERO"+GetWhere("=",oTable:RTI_NUMERO)+" AND DOC_TIPTRA"+GetWhere("=",oTable:RTI_TIPTRA)
             oTableDoc:=OpenTable(cSql)
-            // DR20110915a. Si la variable lVRetFec est谩 activa se eval煤a la fecha, y no el mes
+            // DR20110915a. Si la variable lVRetFec est谩 activa se eval鷄 la fecha, y no el mes
 /*
 // DR20120316a
             IF oTableDoc:RecCount()=0 .OR. oTableDoc:DOC_ANUFIS .OR. (!oVen:lVRetFec .AND. LEFT(DTOS(oTableDoc:DOC_FECHA),6)>=LEFT(DTOS(oTable:RTI_FECHA),6)) .OR. ;
                (oVen:lVRetFec .AND. oTableDoc:DOC_FECHA>=oTable:RTI_FECHA)
 */
             IF oTableDoc:RecCount()=0 .OR. oTableDoc:DOC_ANUFIS .OR. (!oVen:lVRetFec .AND. LEFT(DTOS(oTableDoc:DOC_FECHA),6)>=LEFT(DTOS(oTable:RTI_FECHA),6)) .OR. ;
-               (oVen:lVRetFec .AND. LEFT(DTOS(oTableDoc:DOC_FECHA),6)=LEFT(DTOS(oTable:RTI_FECHA),6) .AND. IIF(EMPTY(oTable:RTI_FCHEMI),oTable:RTI_FECHA,oTable:RTI_FCHEMI)=oTableDoc:DOC_FECHA)
+               (oVen:lVRetFec .AND. LEFT(DTOS(oTableDoc:DOC_FECHA),6)=LEFT(DTOS(oTable:RTI_FECHA),6) .AND. IIF(EMPTY(oTable:RTI_FCHDEC),oTable:RTI_FECHA,oTable:RTI_FCHDEC)=oTableDoc:DOC_FECHA)
                oTableDoc:End()
                oTable:Skip()
                LOOP
@@ -2330,7 +2341,7 @@ PROCE MAIN(oVen)
                LOOP
             ENDIF
             oTableDoc:GoTop()
-            oTableDoc:Replace("DOC_OPERAC",STRZERO(0,6)) // N煤mero de Transacci贸n
+            oTableDoc:Replace("DOC_OPERAC",STRZERO(0,6)) // N鷐ero de Transacci贸n
             oTableDoc:Replace("DOC_FACAFE",SPACE(10))    // Factura Afectada
             oTableDoc:Replace("DOC_MTOIVA",0        )    // Alicuota IVA
             oTableDoc:Replace("DOC_EXONER",0        )    // Exento
@@ -2481,12 +2492,12 @@ PROCE MAIN(oVen)
             cCadena3:=PADL(ALLTRIM(TRANSFORM(nExento,"999,999,999.99")),14)+" "+PADL(ALLTRIM(TRANSFORM(nBase,"999,999,999.99")),14)
             cCadena4:=PADL(ALLTRIM(TRANSFORM(nIvaRet,"999,999,999.99")),14)+" "+PADL(ALLTRIM(TRANSFORM(nIvaPer,"999,999,999.99")),14)
             oHoja2:Cells( nRow, 01):Value := IIF( oVen:lVConDin,'='+oVen:cEFunCel+'("ROW"'+oVen:cESepLis+'A'+ALLTRIM(STR(nRow))+')-'+ALLTRIM(STR(nDinamic)),nI)
-            oHoja2:Cells( nRow, 02):Value := oTableDoc:DOC_FECHA // DR20130621a IIF(EMPTY(oTable:RTI_FCHEMI),oTable:RTI_FECHA,oTable:RTI_FCHEMI) // DR20110915b oTableDoc:DOC_FECHA
+            oHoja2:Cells( nRow, 02):Value := oTableDoc:DOC_FECHA // DR20130621a IIF(EMPTY(oTable:RTI_FCHDEC),oTable:RTI_FECHA,oTable:RTI_FCHDEC) // DR20110915b oTableDoc:DOC_FECHA
             oHoja2:Cells( nRow, 03):Value := ALLTRIM(cRif)
             oHoja2:Cells( nRow, 04):Value := ALLTRIM(cRSocial)
             oHoja2:Cells( nRow, 05):Set( "NumberFormat", "@") // DR20110915b
             oHoja2:Cells( nRow, 05):Value := oTable:RTI_NUMCLI // DR20110915b
-            oHoja2:Cells( nRow, 06):Value := IIF(EMPTY(oTable:RTI_FCHEMI),oTable:RTI_FECHA,oTable:RTI_FCHEMI) // DR20130621b
+            oHoja2:Cells( nRow, 06):Value := IIF(EMPTY(oTable:RTI_FCHDEC),oTable:RTI_FECHA,oTable:RTI_FCHDEC) // DR20130621b
             oHoja2:Cells( nRow, 07):Value := " "
             oHoja2:Cells( nRow, 08):Set( "NumberFormat", "@")
             oHoja2:Cells( nRow, 08):Value := ALLTRIM(LEFT(cCadena1,10))

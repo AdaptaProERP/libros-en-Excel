@@ -328,7 +328,7 @@ FUNCTION INICIO()
           FONT oFont;
           FILENAME "BITMAPS\XSALIR.BMP";
           TOP PROMPT "Cerrar"; 
-          ACTION (oGRU:Cancel()) CANCEL
+          ACTION (oCom:Cancel()) CANCEL
 
    oBar:SetColor(CLR_BLACK,oDp:nGris)
 

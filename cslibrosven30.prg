@@ -10,8 +10,11 @@
 
 #include "DPXBASE.CH"
 
-PROCE MAIN()
+PROCE MAIN(dDesde,dHasta)
   LOCAL oBtn,oFont,oData,nClrText:=CLR_BLUE,oTable,nAt,cModelo:="",aSeries:={},aForms
+
+  DEFAULT dDesde:=FCHINIMES(oDp:dFecha),;
+          dHasta:=FCHFINMES(oDp:dFecha)
 
 //  DEFAULT lConEsp:=.F., lPlanilla:=.F.
 
@@ -32,8 +35,8 @@ PROCE MAIN()
   oVen:cFileChm     :=""
   oVen:cTopic       :=""
 
-  oVen:dDesde       :=FCHINIMES(oDp:dFecha)
-  oVen:dHasta       :=FCHFINMES(oDp:dFecha)
+  oVen:dDesde       :=dDesde // FCHINIMES(oDp:dFecha)
+  oVen:dHasta       :=dHasta // FCHFINMES(oDp:dFecha)
 
   oVen:lVControl :=oData:Get("lVControl" ,.T.)
   oVen:lVSombCab :=oData:Get("lVSombCab" ,.T.)
@@ -189,7 +192,8 @@ PROCE MAIN()
 
 
   SETFOLDER(0)
-  
+
+/*  
   @09, 33 SBUTTON oBtn ;
           SIZE 42, 23 FONT oFont;
           FILE "BITMAPS\RUN.BMP" ;
@@ -210,8 +214,8 @@ PROCE MAIN()
           COLORS CLR_BLACK, { CLR_WHITE, CLR_HGRAY, 1 };
           ACTION (CursorWait(),;
                   oVen:Close())
-
-  oVen:Activate(NIL)
+*/
+  oVen:Activate({||oVen:INICIO()})
 
 Return nil
 
@@ -299,4 +303,51 @@ IF oVen:lEDetSep
    oVen:cESepLis:=" "
    oVen:oCESEPLIS:Refresh()
 ENDIF
+
 RETURN .T.
+
+FUNCTION INICIO()
+   LOCAL oCursor,oBar,oBtn,oFont,oCol
+   LOCAL oDlg:=oVen:oDlg
+   LOCAL nLin:=0
+
+   DEFINE CURSOR oCursor HAND
+   DEFINE BUTTONBAR oBar SIZE 52+15,60-15+15 OF oDlg 3D CURSOR oCursor
+   DEFINE FONT oFont  NAME "Tahoma"   SIZE 0, -14 BOLD
+
+
+   DEFINE BUTTON oBtn;
+          OF oBar;
+          NOBORDER;
+          FONT oFont;
+          FILENAME "BITMAPS\RUN.BMP",NIL,"BITMAPS\RUNG.BMP";
+          TOP PROMPT "Ejecutar"; 
+          ACTION (CursorWait(),;
+                  oVen:LIBVENTA(oVen),;
+                  EJECUTAR("IVALOAD",oVen:dFecha))
+
+//                  oVen:dDesde:=CTOD("01/"+STRZERO(oVen:oMes:nAt,2)+"/"+STRZERO(oVen:nAno)),;
+//                  oVen:dHasta:=FCHFINMES(oVen:dDesde),;
+
+
+   oBtn:cToolTip:="Guardar"
+
+   oVen:oBtnRun:=oBtn
+
+
+   DEFINE BUTTON oBtn;
+          OF oBar;
+          NOBORDER;
+          FONT oFont;
+          FILENAME "BITMAPS\XSALIR.BMP";
+          TOP PROMPT "Cerrar"; 
+          ACTION (oVen:Cancel()) CANCEL
+
+   oBar:SetColor(CLR_BLACK,oDp:nGris)
+
+   AEVAL(oBar:aControls,{|o,n| o:SetColor(CLR_BLACK,oDp:nGris) })
+
+RETURN .T.
+
+
+
